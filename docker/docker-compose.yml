@@ -1,0 +1,46 @@
+version: '3.4'
+
+services:
+
+  middleware-elastic:
+    image: registry.cn-hangzhou.aliyuncs.com/masastack/elasticsearch:7.6.2.0
+
+  middleware-otel:
+    image: registry.cn-hangzhou.aliyuncs.com/masastack/opentelemetry-collector-contrib:0.68.0
+
+  middleware-prometheus:
+    image: registry.cn-hangzhou.aliyuncs.com/masastack/prometheus:v2.30.2
+
+  middleware-redis:
+    image: registry.cn-hangzhou.aliyuncs.com/masastack/redis:5.0.8
+
+  middleware-sqlserver:
+    image: registry.cn-hangzhou.aliyuncs.com/masastack/sqlserver:2019-latest
+
+
+  alert-service:
+    image: registry.cn-hangzhou.aliyuncs.com/masastack/masa-alert-service:demo-1.0.0-rc1
+    depends_on:
+      - middleware-sqlserver
+
+  alert-service-dapr:
+    image: "daprio/daprd:1.10.6"
+    network_mode: "service:alert-service"
+    depends_on:
+      - alert-service
+
+  alert:
+    image: registry.cn-hangzhou.aliyuncs.com/masastack/masa-alert-web-admin:demo-1.0.0-rc1
+    depends_on:
+      - alert-service
+
+  alert-dapr:
+    image: "daprio/daprd:1.10.6"
+    network_mode: "service:alert"
+    depends_on:
+      - alert
+
+  
+
+  dapr-placement:
+    image: "daprio/dapr:1.10.6"
